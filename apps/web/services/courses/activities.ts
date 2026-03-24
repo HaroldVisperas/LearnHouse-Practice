@@ -11,17 +11,40 @@ export async function createActivity(
   org_id: any,
   access_token: string
 ) {
-  data.content = {}
-  // remove chapter_id from data
   delete data.chapterId
 
+  const url = `${getAPIUrl()}activities/?coursechapter_id=${chapter_id}&org_id=${org_id}`
+
+  console.log('createActivity URL:', url)
+  console.log('createActivity payload:', data)
+  console.log('createActivity token exists:', !!access_token)
+
   const result = await fetch(
-    `${getAPIUrl()}activities/?coursechapter_id=${chapter_id}&org_id=${org_id}`,
+    url,
     RequestBodyWithAuthHeader('POST', data, null, access_token)
   )
+
   const res = await result.json()
   return res
 }
+
+// export async function createActivity(
+//   data: any,
+//   chapter_id: any,
+//   org_id: any,
+//   access_token: string
+// ) {
+//   data.content = {}
+//   // remove chapter_id from data
+//   delete data.chapterId
+
+//   const result = await fetch(
+//     `${getAPIUrl()}activities/?coursechapter_id=${chapter_id}&org_id=${org_id}`,
+//     RequestBodyWithAuthHeader('POST', data, null, access_token)
+//   )
+//   const res = await result.json()
+//   return res
+// }
 
 export async function createFileActivity(
   file: File,

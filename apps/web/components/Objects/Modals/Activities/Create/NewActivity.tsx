@@ -10,6 +10,7 @@ import Image from 'next/image'
 import DocumentPdfModal from './NewActivityModal/DocumentActivityModal'
 import Assignment from './NewActivityModal/AssignmentActivityModal'
 import { useTranslation } from 'react-i18next'
+import PeerReviewActivityModal from './NewActivityModal/PeerReviewActivityModal'
 
 function NewActivityModal({
   closeModal,
@@ -74,6 +75,13 @@ function NewActivityModal({
               {t('dashboard.courses.structure.activity.types.assignments')}
             </div>
           </ActivityOption>
+          <ActivityOption
+            onClick={() => {
+              setSelectedView('peerreview')
+            }}
+          >
+            Peer Review
+          </ActivityOption>
         </div>
       )}
 
@@ -108,8 +116,17 @@ function NewActivityModal({
           chapterId={chapterId}
           course={course}
           closeModal={closeModal}
-        />)
-      }
+        />
+      )}
+
+      {selectedView === 'peerreview' && (
+        <PeerReviewActivityModal
+          submitActivity={submitActivity}
+          chapterId={chapterId}
+          course={course}
+          closeModal={closeModal}
+        />
+      )}
     </>
   )
 }
