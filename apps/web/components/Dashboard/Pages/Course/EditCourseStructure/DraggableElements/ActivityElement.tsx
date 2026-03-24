@@ -6,6 +6,7 @@ import {
   Backpack,
   Eye,
   File,
+  FileText,
   FilePenLine,
   Globe,
   GripVertical,
@@ -155,7 +156,15 @@ function ActivityElement(props: ActivitiyElementProps) {
           </div>
 
           {/*   Activity Type Icon  */}
-          <ActivityTypeIndicator activityType={props.activity.activity_type} isMobile={isMobile} />
+          {/* <ActivityTypeIndicator activityType={props.activity.activity_type} isMobile={isMobile} /> */}
+          <ActivityTypeIndicator
+            activityType={
+              props.activity.activity_sub_type === 'SUBTYPE_CUSTOM_PEER_REVIEW'
+                ? 'SUBTYPE_CUSTOM_PEER_REVIEW'
+                : props.activity.activity_type
+            }
+            isMobile={isMobile}
+          />
 
           {/*   Activity Name  */}
           <div className="flex-1 flex items-center gap-2 min-w-0">
@@ -281,7 +290,11 @@ const ACTIVITIES = {
   'TYPE_SCORM': {
     displayNameKey: 'scorm',
     Icon: Package
-  }
+  },
+  'SUBTYPE_CUSTOM_PEER_REVIEW': {
+    displayNameKey: 'peerreview',
+    Icon: FileText,
+},
 }
 
 const ActivityTypeIndicator = ({activityType, isMobile} : { activityType: keyof typeof ACTIVITIES, isMobile: boolean}) => {

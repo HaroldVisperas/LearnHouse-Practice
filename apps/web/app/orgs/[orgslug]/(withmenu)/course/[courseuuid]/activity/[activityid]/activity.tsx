@@ -48,6 +48,52 @@ const AISidePanelInline = lazy(() => import('@components/Objects/Activities/AI/A
 const AIChatBotProvider = lazy(() => import('@components/Contexts/AI/AIChatBotContext'))
 const ScormActivity = lazy(() => import('../../../../../../../../ee/components/Activities/ScormActivity'))
 
+const PeerReviewActivityView = ({ activity }: { activity: any }) => {
+  return (
+    <div className="bg-white nice-shadow rounded-xl p-6 md:p-8 max-w-4xl mx-auto w-full">
+      <h1 className="text-2xl font-bold text-gray-900">{activity?.name}</h1>
+
+      <div className="mt-6 space-y-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Instructions
+          </p>
+          <p className="mt-2 text-gray-700 whitespace-pre-line">
+            {activity?.content?.instructions || 'No instructions provided.'}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Submission Mode
+          </p>
+          <p className="mt-2 text-gray-700">
+            {activity?.content?.submission_mode || 'text'}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Reviews per Student
+          </p>
+          <p className="mt-2 text-gray-700">
+            {activity?.content?.reviews_per_student ?? 0}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Anonymous Reviews
+          </p>
+          <p className="mt-2 text-gray-700">
+            {activity?.content?.anonymous_reviews ? 'Yes' : 'No'}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Loading fallback component
 const LoadingFallback = () => (
   <div className="flex items-center justify-center h-64">
@@ -241,6 +287,10 @@ function ActivityClient(props: ActivityClientProps) {
       return null;
     }
 
+    if (activity.activity_sub_type === 'SUBTYPE_CUSTOM_PEER_REVIEW') {
+      return <PeerReviewActivityView activity={activity} />
+    }
+
     switch (activity.activity_type) {
       case 'TYPE_DYNAMIC':
         return (
@@ -330,7 +380,7 @@ function ActivityClient(props: ActivityClientProps) {
   }
 
   useEffect(() => {
-    if (activity.activity_type == 'TYPE_DYNAMIC' || activity.activity_type == 'TYPE_SCORM') {
+    if (activity.activity_type == 'TYPE_DYNAMIC' || activity.activity_type == 'TYPE_SCORM' || activity.activity_sub_type == 'SUBTYPE_CUSTOM_PEER_REVIEW') {
       setBgColor(isFocusMode ? 'bg-white' : 'bg-white nice-shadow');
     }
     else if (activity.activity_type == 'TYPE_ASSIGNMENT') {

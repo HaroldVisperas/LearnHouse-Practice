@@ -41,6 +41,11 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# allow_origins=[
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ],
+# allow_origin_regex=learnhouse_config.hosting_config.allowed_regexp,
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=learnhouse_config.hosting_config.allowed_regexp,
