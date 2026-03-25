@@ -104,7 +104,7 @@ function PeerReviewActivityModal({
 
         <FormField name="requiredReviewsSubmission">
           <div>
-            <FormLabel>Minimum Reviews per Submission</FormLabel>
+            <FormLabel>Required Reviews per Submission</FormLabel>
             <FormMessage match="valueMissing">
               Please enter the minimum reviews needed for each submission.
             </FormMessage>
