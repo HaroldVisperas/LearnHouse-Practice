@@ -4,8 +4,7 @@ from pydantic import BaseModel
 from src.services.courses.peer_coursework import (
     submit_submission,
     get_submissions,
-    assign_reviewer,
-    get_reviews_for_reviewer,
+    get_next_review_for_student,
     submit_review,
     get_feedback_for_student,
 )
@@ -20,15 +19,22 @@ class SubmitSubmissionPayload(BaseModel):
     content: str
 
 
-class AssignReviewerPayload(BaseModel):
-    submission_id: str
+class NextReviewPayload(BaseModel):
+    activity_id: str
     reviewer_id: str
+    required_reviews_per_submission: int
+    required_reviews_per_student: int
+    max_reviews_per_student: int
 
 
 class SubmitReviewPayload(BaseModel):
+    activity_id: str
     submission_id: str
     reviewer_id: str
     feedback: str
+    required_reviews_per_submission: int
+    required_reviews_per_student: int
+    max_reviews_per_student: int
 
 
 @router.post("/submissions")
@@ -45,38 +51,46 @@ def create_submission(payload: SubmitSubmissionPayload):
 
 
 @router.get("/submissions")
-def list_submissions(course_id: str = Query(...)):
-    return get_submissions(course_id)
+def list_submissions(
+    course_id: str = Query(...),
+    activity_id: str | None = Query(None),
+):
+    return get_submissions(course_id, activity_id)
 
 
-@router.post("/assign")
-def create_assignment(payload: AssignReviewerPayload):
+@router.post("/next-review")
+def next_review(payload: NextReviewPayload):
     try:
-        return assign_reviewer(
-            submission_id=payload.submission_id,
+        return get_next_review_for_student(
+            activity_id=payload.activity_id,
             reviewer_id=payload.reviewer_id,
+            required_reviews_per_submission=payload.required_reviews_per_submission,
+            required_reviews_per_student=payload.required_reviews_per_student,
+            max_reviews_per_student=payload.max_reviews_per_student,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.get("/reviews")
-def list_reviews(reviewer_id: str = Query(...)):
-    return get_reviews_for_reviewer(reviewer_id)
 
 
 @router.post("/review-submit")
 def create_review(payload: SubmitReviewPayload):
     try:
         return submit_review(
+            activity_id=payload.activity_id,
             submission_id=payload.submission_id,
             reviewer_id=payload.reviewer_id,
             feedback=payload.feedback,
+            required_reviews_per_submission=payload.required_reviews_per_submission,
+            required_reviews_per_student=payload.required_reviews_per_student,
+            max_reviews_per_student=payload.max_reviews_per_student,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/feedback")
-def list_feedback(student_id: str = Query(...)):
-    return get_feedback_for_student(student_id)
+def list_feedback(
+    student_id: str = Query(...),
+    activity_id: str | None = Query(None),
+):
+    return get_feedback_for_student(student_id, activity_id)
