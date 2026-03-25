@@ -120,17 +120,18 @@ function ActivityActions({ activity, activityid, course, orgslug, assignment, sh
     <div className="flex space-x-2 items-center">
       {activity && activity.published == true && activity.content.paid_access != false && (
         <AuthenticatedClientElement checkMethod="authentication">
-          {activity.activity_type != 'TYPE_ASSIGNMENT' && (
-            <>
-              <MarkStatus
-                activity={activity}
-                activityid={activityid}
-                course={course}
-                orgslug={orgslug}
-                trailData={trailData}
-              />
-            </>
-          )}
+          {activity.activity_type != 'TYPE_ASSIGNMENT' &&
+            activity.activity_sub_type !== 'SUBTYPE_CUSTOM_PEER_REVIEW' && (
+              <>
+                <MarkStatus
+                  activity={activity}
+                  activityid={activityid}
+                  course={course}
+                  orgslug={orgslug}
+                  trailData={trailData}
+                />
+              </>
+            )}
           {activity.activity_type == 'TYPE_ASSIGNMENT' && (
             <>
               <AssignmentSubmissionProvider assignment_uuid={assignment?.assignment_uuid}>
@@ -229,6 +230,36 @@ function ActivityClient(props: ActivityClientProps) {
     (url) => swrFetcher(url, access_token)
   )
 
+  const markPeerReviewActivityComplete = async () => {
+    try {
+      await markActivityAsComplete(
+        orgslug,
+        course.course_uuid,
+        activity.activity_uuid,
+        access_token
+      )
+
+      await mutate(`${getAPIUrl()}trail/org/${org?.id}/trail`)
+    } catch (error) {
+      console.error('Failed to auto-mark peer review activity complete:', error)
+    }
+  }
+
+  const unmarkPeerReviewActivityComplete = async () => {
+    try {
+      await unmarkActivityAsComplete(
+        orgslug,
+        course.course_uuid,
+        activity.activity_uuid,
+        access_token
+      )
+
+      await mutate(`${getAPIUrl()}trail/org/${org?.id}/trail`)
+    } catch (error) {
+      console.error('Failed to auto-unmark peer review activity:', error)
+    }
+  }
+
   // Memoize activity position calculation
   const { allActivities, currentIndex } = useActivityPosition(course, activityid);
   
@@ -243,7 +274,14 @@ function ActivityClient(props: ActivityClientProps) {
     }
 
     if (activity.activity_sub_type === 'SUBTYPE_CUSTOM_PEER_REVIEW') {
-      return <PeerReviewActivityView activity={activity} />
+      return (
+        <PeerReviewActivityView
+          activity={activity}
+          onMarkComplete={markPeerReviewActivityComplete}
+          onUnmarkComplete={unmarkPeerReviewActivityComplete}
+          trailData={trailData}
+        />
+      )
     }
 
     switch (activity.activity_type) {

@@ -15,10 +15,16 @@ import {
 
 type PeerReviewActivityViewProps = {
   activity: any
+  onMarkComplete?: () => Promise<void>
+  onUnmarkComplete?: () => Promise<void>
+  trailData?: any
 }
 
 export default function PeerReviewActivityView({
   activity,
+  onMarkComplete,
+  onUnmarkComplete,
+  trailData,
 }: PeerReviewActivityViewProps) {
   const session = useLHSession() as any
 
@@ -26,6 +32,8 @@ export default function PeerReviewActivityView({
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [hasSubmitted, setHasSubmitted] = React.useState(false)
   const [isCheckingSubmission, setIsCheckingSubmission] = React.useState(true)
+
+  const [hasSyncedCompletion, setHasSyncedCompletion] = React.useState(false)
 
   const [currentReview, setCurrentReview] = React.useState<any>(null)
   const [reviewFeedbackText, setReviewFeedbackText] = React.useState('')
@@ -39,6 +47,7 @@ export default function PeerReviewActivityView({
     message: '',
   })
   const [receivedFeedback, setReceivedFeedback] = React.useState<any[]>([])
+  const [receivedReviewCount, setReceivedReviewCount] = React.useState(0)
 
   const studentId =
     session?.data?.user?.user_uuid?.toString() ||
@@ -73,11 +82,8 @@ export default function PeerReviewActivityView({
           String(item?.submission?.activity_id) === String(activity?.activity_uuid)
       )
 
-      const receivedReviewCount = ownSubmissionItem?.reviews?.length || 0
-
-      setIsActivityComplete(
-        receivedReviewCount >= requiredReviewsPerSubmission
-      )
+      const reviewCount = ownSubmissionItem?.reviews?.length || 0
+      setReceivedReviewCount(reviewCount)
     } catch (error) {
       console.error('Failed to load received feedback:', error)
     }
@@ -148,6 +154,70 @@ export default function PeerReviewActivityView({
       checkSubmission()
     }
   }, [activity, studentId])
+
+  React.useEffect(() => {
+    if (!trailData || !activity?.id) return
+
+    const run = trailData?.runs?.find((run: any) =>
+      run?.steps?.some((step: any) => step.activity_id === activity.id)
+    )
+
+    const completedStep = run?.steps?.find(
+      (step: any) => step.activity_id === activity.id && step.complete === true
+    )
+
+    setHasSyncedCompletion(!!completedStep)
+  }, [trailData, activity])
+
+  React.useEffect(() => {
+    let cancelled = false
+
+    const syncCompletion = async () => {
+      if (!onMarkComplete || !onUnmarkComplete) return
+
+      try {
+        if (isActivityComplete && !hasSyncedCompletion) {
+          await onMarkComplete()
+          if (!cancelled) {
+            setHasSyncedCompletion(true)
+          }
+        } else if (!isActivityComplete && hasSyncedCompletion) {
+          await onUnmarkComplete()
+          if (!cancelled) {
+            setHasSyncedCompletion(false)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to sync peer review completion:', error)
+      }
+    }
+
+    syncCompletion()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isActivityComplete, hasSyncedCompletion, onMarkComplete, onUnmarkComplete])
+
+  React.useEffect(() => {
+    const hasEnoughReviewsOnOwnSubmission =
+      receivedReviewCount >= requiredReviewsPerSubmission
+
+    const hasCompletedRequiredReviewsForOthers =
+      reviewProgress.completed_reviews >= requiredReviewsPerStudent
+
+    setIsActivityComplete(
+      hasSubmitted &&
+        hasEnoughReviewsOnOwnSubmission &&
+        hasCompletedRequiredReviewsForOthers
+    )
+  }, [
+    hasSubmitted,
+    receivedReviewCount,
+    reviewProgress.completed_reviews,
+    requiredReviewsPerSubmission,
+    requiredReviewsPerStudent,
+  ])
 
   const handleSubmit = async () => {
     if (!submissionText.trim()) {
@@ -272,15 +342,6 @@ export default function PeerReviewActivityView({
               {maxReviewsPerStudent}
             </p>
           </div>
-
-          <div className="rounded-lg border border-gray-200 p-4 md:col-span-2">
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              Anonymous Reviews
-            </p>
-            <p className="mt-2 text-gray-700">
-              {activity?.content?.anonymous_reviews ? 'Yes' : 'No'}
-            </p>
-          </div>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
@@ -295,35 +356,14 @@ export default function PeerReviewActivityView({
 
               <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4">
                 <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-                  Activity Status
-                </p>
-                <p className="mt-2 text-gray-700">
-                  {isActivityComplete
-                    ? 'Completed'
-                    : 'Waiting for required reviews on your submission'}
-                </p>
-                <p className="mt-1 text-sm text-gray-600">
-                  This activity will be considered complete once your submission receives{' '}
-                  {requiredReviewsPerSubmission} review(s).
-                </p>
-              </div>
-
-              <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4">
-                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                   Review Progress
                 </p>
                 <p className="mt-2 text-gray-700">
-                  Completed reviews: {reviewProgress.completed_reviews} /{' '}
-                  {reviewProgress.required_reviews_per_student} required
+                  Reviews you completed for others: {reviewProgress.completed_reviews} / {requiredReviewsPerStudent} (Required) - {reviewProgress.max_reviews_per_student} (Maximum)
                 </p>
                 <p className="mt-1 text-gray-700">
-                  Maximum allowed: {reviewProgress.max_reviews_per_student}
+                  Reviews received on your submission: {receivedReviewCount} / {requiredReviewsPerSubmission} (Required)
                 </p>
-                {reviewProgress.message ? (
-                  <p className="mt-2 text-sm text-gray-600">
-                    {reviewProgress.message}
-                  </p>
-                ) : null}
               </div>
 
               <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4">
@@ -364,7 +404,7 @@ export default function PeerReviewActivityView({
                   </>
                 ) : (
                   <p className="mt-3 text-sm text-gray-600">
-                    No review is available right now.
+                    No eligible submissions are available right now.
                   </p>
                 )}
               </div>
