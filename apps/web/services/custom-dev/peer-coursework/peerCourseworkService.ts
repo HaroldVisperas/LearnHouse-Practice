@@ -1,30 +1,40 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-export async function getPeerSubmissions(courseId: string) {
-  const res = await fetch(`${API_BASE}/api/v1/courses/peer-coursework/submissions?course_id=${courseId}`, {
-    credentials: 'include',
-    cache: 'no-store',
-  })
+export async function getPeerSubmissions(input: {
+  course_id: string
+  activity_id: string
+}) {
+  const res = await fetch(
+    `${API_BASE}/api/v1/courses/peer-coursework/submissions?course_id=${input.course_id}&activity_id=${input.activity_id}`,
+    {
+      credentials: 'include',
+      cache: 'no-store',
+    }
+  )
 
   if (!res.ok) {
-    throw new Error('Failed to load submissions')
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.detail || 'Failed to load submissions')
   }
 
   return res.json()
 }
 
 export async function submitPeerSubmission(input: {
-  courseId: string
-  activityId: string
-  studentId: string
+  course_id: string
+  activity_id: string
+  student_id: string
   content: string
 }) {
-  const res = await fetch(`${API_BASE}/api/v1/courses/peer-coursework/submissions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(input),
-  })
+  const res = await fetch(
+    `${API_BASE}/api/v1/courses/peer-coursework/submissions`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(input),
+    }
+  )
 
   const data = await res.json()
 
@@ -35,50 +45,50 @@ export async function submitPeerSubmission(input: {
   return data
 }
 
-export async function assignPeerReviewer(input: {
-  submissionId: string
-  reviewerId: string
+export async function getNextPeerReview(input: {
+  activity_id: string
+  reviewer_id: string
+  required_reviews_per_submission: number
+  required_reviews_per_student: number
+  max_reviews_per_student: number
 }) {
-  const res = await fetch(`${API_BASE}/api/v1/courses/peer-coursework/assign`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(input),
-  })
+  const res = await fetch(
+    `${API_BASE}/api/v1/courses/peer-coursework/next-review`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(input),
+    }
+  )
 
   const data = await res.json()
 
   if (!res.ok) {
-    throw new Error(data.detail || 'Failed to assign reviewer')
+    throw new Error(data.detail || 'Failed to load next review')
   }
 
   return data
 }
 
-export async function getAssignedPeerReviews(reviewerId: string) {
-  const res = await fetch(`${API_BASE}/api/v1/courses/peer-coursework/reviews?reviewer_id=${reviewerId}`, {
-    credentials: 'include',
-    cache: 'no-store',
-  })
-
-  if (!res.ok) {
-    throw new Error('Failed to load assigned reviews')
-  }
-
-  return res.json()
-}
-
 export async function submitPeerReview(input: {
-  submissionId: string
-  reviewerId: string
+  activity_id: string
+  submission_id: string
+  reviewer_id: string
   feedback: string
+  required_reviews_per_submission: number
+  required_reviews_per_student: number
+  max_reviews_per_student: number
 }) {
-  const res = await fetch(`${API_BASE}/api/v1/courses/peer-coursework/review-submit`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(input),
-  })
+  const res = await fetch(
+    `${API_BASE}/api/v1/courses/peer-coursework/review-submit`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(input),
+    }
+  )
 
   const data = await res.json()
 
@@ -89,14 +99,29 @@ export async function submitPeerReview(input: {
   return data
 }
 
-export async function getPeerFeedback(studentId: string) {
-  const res = await fetch(`${API_BASE}/api/v1/courses/peer-coursework/feedback?student_id=${studentId}`, {
-    credentials: 'include',
-    cache: 'no-store',
+export async function getPeerFeedback(input: {
+  student_id: string
+  activity_id?: string
+}) {
+  const query = new URLSearchParams({
+    student_id: input.student_id,
   })
 
+  if (input.activity_id) {
+    query.append('activity_id', input.activity_id)
+  }
+
+  const res = await fetch(
+    `${API_BASE}/api/v1/courses/peer-coursework/feedback?${query.toString()}`,
+    {
+      credentials: 'include',
+      cache: 'no-store',
+    }
+  )
+
   if (!res.ok) {
-    throw new Error('Failed to load feedback')
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.detail || 'Failed to load feedback')
   }
 
   return res.json()

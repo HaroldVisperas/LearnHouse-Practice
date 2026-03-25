@@ -36,6 +36,7 @@ import ActivityIndicators from '@components/Pages/Courses/ActivityIndicators'
 import UserAvatar from '@components/Objects/UserAvatar'
 import { useTranslation } from 'react-i18next'
 import { useAnalytics } from '@/hooks/useAnalytics'
+import PeerReviewActivityView from '@components/Objects/Activities/PeerReview/PeerReviewActivityView'
 
 // Lazy load heavy components
 const Canva = lazy(() => import('@components/Objects/Activities/DynamicCanva/DynamicCanva'))
@@ -47,52 +48,6 @@ const AISidePanelContentWrapper = lazy(() => import('@components/Objects/Activit
 const AISidePanelInline = lazy(() => import('@components/Objects/Activities/AI/AIActivityAsk').then(mod => ({ default: mod.AISidePanelInline })))
 const AIChatBotProvider = lazy(() => import('@components/Contexts/AI/AIChatBotContext'))
 const ScormActivity = lazy(() => import('../../../../../../../../ee/components/Activities/ScormActivity'))
-
-const PeerReviewActivityView = ({ activity }: { activity: any }) => {
-  return (
-    <div className="bg-white nice-shadow rounded-xl p-6 md:p-8 max-w-4xl mx-auto w-full">
-      <h1 className="text-2xl font-bold text-gray-900">{activity?.name}</h1>
-
-      <div className="mt-6 space-y-4">
-        <div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            Instructions
-          </p>
-          <p className="mt-2 text-gray-700 whitespace-pre-line">
-            {activity?.content?.instructions || 'No instructions provided.'}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            Submission Mode
-          </p>
-          <p className="mt-2 text-gray-700">
-            {activity?.content?.submission_mode || 'text'}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            Reviews per Student
-          </p>
-          <p className="mt-2 text-gray-700">
-            {activity?.content?.reviews_per_student ?? 0}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            Anonymous Reviews
-          </p>
-          <p className="mt-2 text-gray-700">
-            {activity?.content?.anonymous_reviews ? 'Yes' : 'No'}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // Loading fallback component
 const LoadingFallback = () => (
