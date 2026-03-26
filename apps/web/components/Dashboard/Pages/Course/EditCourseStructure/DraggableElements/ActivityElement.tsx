@@ -373,6 +373,24 @@ const ActivityElementOptions = ({ activity, isMobile }: { activity: any; isMobil
           <span className="hidden sm:inline">{t('dashboard.courses.structure.actions.edit_assignment')}</span>
         </Link>
       )}
+      {activity.activity_sub_type === 'SUBTYPE_CUSTOM_PEER_REVIEW' && (
+        <Link
+          href={
+            getUriWithOrg(org.slug, '') +
+            `/course/${course?.courseStructure.course_uuid.replace(
+              'course_',
+              ''
+            )}/activity/${activity.activity_uuid.replace(
+              'activity_',
+              ''
+            )}/peer-review/edit`
+          }
+          className="h-7 px-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-md flex items-center gap-1 text-xs font-bold transition-colors border border-purple-200 shadow-sm"
+        >
+          <FilePenLine size={12} />
+          <span className="hidden sm:inline">Edit Peer Review</span>
+        </Link>
+      )}
     </>
   );
 };
