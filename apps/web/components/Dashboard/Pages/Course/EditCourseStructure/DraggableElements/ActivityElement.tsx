@@ -385,7 +385,7 @@ const ActivityElementOptions = ({ activity, isMobile }: { activity: any; isMobil
               ''
             )}/peer-review/edit`
           }
-          className="h-7 px-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-md flex items-center gap-1 text-xs font-bold transition-colors border border-purple-200 shadow-sm"
+          className="h-7 px-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-md flex items-center gap-1 text-xs font-bold transition-colors border border-purple-200 shadow-sm shadow-purple-300/20"
         >
           <FilePenLine size={12} />
           <span className="hidden sm:inline">Edit Peer Review</span>
