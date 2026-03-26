@@ -3,6 +3,7 @@ import DynamicPageActivityImage from 'public/activities_types/dynamic-page-activ
 import VideoPageActivityImage from 'public//activities_types/video-page-activity.png'
 import DocumentPdfPageActivityImage from 'public//activities_types/documentpdf-page-activity.png'
 import AssignmentActivityImage from 'public//activities_types/assignment-page-activity.png'
+import PeerReviewActivityImage from 'public//activities_types/peerreview-page-activity.png'
 
 import DynamicCanvaModal from './NewActivityModal/DynamicActivityModal'
 import VideoModal from './NewActivityModal/VideoActivityModal'
@@ -80,7 +81,12 @@ function NewActivityModal({
               setSelectedView('peerreview')
             }}
           >
-            Peer Review
+            <div className="h-20 rounded-lg m-0.5 flex flex-col items-center justify-end text-center bg-white hover:cursor-pointer">
+              <Image height={70} unoptimized quality={100} alt="Peer Review Page" src={PeerReviewActivityImage}></Image>
+            </div>
+            <div className="flex text-sm h-5 font-medium text-gray-500 items-center justify-center text-center">
+              {t('dashboard.courses.structure.activity.types.peerreview')}
+            </div>
           </ActivityOption>
         </div>
       )}

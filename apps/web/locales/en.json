@@ -2185,7 +2185,8 @@
             "assignments": "Assignments",
             "dynamic": "Dynamic",
             "dynamic_page": "Dynamic Page",
-            "scorm": "Scorm"
+            "scorm": "Scorm",
+            "peerreview": "Peer Review"
           },
           "toasts": {
             "deleting": "Deleting activity...",
@@ -4144,7 +4145,8 @@
         "document": "Document",
         "quiz": "Quiz",
         "assignment": "Assignment",
-        "dynamic": "Dynamic"
+        "dynamic": "Dynamic",
+        "peerreview": "Peer Review"
       },
       "overview_stats": {
         "views": "Views",
