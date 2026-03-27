@@ -1,5 +1,8 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, UploadFile, File, Form
 from pydantic import BaseModel
+from pathlib import Path
+from uuid import uuid4
+import shutil
 
 from src.services.courses.peer_coursework import (
     submit_submission,
@@ -11,12 +14,16 @@ from src.services.courses.peer_coursework import (
 
 router = APIRouter(prefix="/courses/peer-coursework", tags=["peer-coursework"])
 
+UPLOAD_DIR = Path("storage/peer_review_uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
 
 class SubmitSubmissionPayload(BaseModel):
     activity_id: str
     course_id: str
     student_id: str
-    content: str
+    content: str = ""
+    files: list = []
 
 
 class NextReviewPayload(BaseModel):
@@ -35,7 +42,34 @@ class SubmitReviewPayload(BaseModel):
     required_reviews_per_submission: int
     required_reviews_per_student: int
     max_reviews_per_student: int
+    
+@router.post("/upload")
+async def upload_peer_review_file(
+    file_object: UploadFile = File(...),
+    activity_id: str = Form(...),
+    student_id: str = Form(...),
+):
+    try:
+        extension = Path(file_object.filename).suffix
+        saved_name = f"{uuid4()}{extension}"
+        target_path = UPLOAD_DIR / saved_name
 
+        with target_path.open("wb") as buffer:
+            shutil.copyfileobj(file_object.file, buffer)
+
+        return {
+            "success": True,
+            "file": {
+                "original_name": file_object.filename,
+                "stored_name": saved_name,
+                "content_type": file_object.content_type,
+                "path": str(target_path).replace("\\", "/"),
+                "activity_id": activity_id,
+                "student_id": student_id,
+            },
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/submissions")
 def create_submission(payload: SubmitSubmissionPayload):
@@ -45,6 +79,7 @@ def create_submission(payload: SubmitSubmissionPayload):
             course_id=payload.course_id,
             student_id=payload.student_id,
             content=payload.content,
+            files=payload.files,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

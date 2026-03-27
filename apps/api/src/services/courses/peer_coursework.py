@@ -7,7 +7,13 @@ store = {
 }
 
 
-def submit_submission(activity_id: str, course_id: str, student_id: str, content: str):
+def submit_submission(
+    activity_id: str,
+    course_id: str,
+    student_id: str,
+    content: str = "",
+    files: list | None = None,
+):
     existing = next(
         (
             s
@@ -19,9 +25,11 @@ def submit_submission(activity_id: str, course_id: str, student_id: str, content
 
     if existing:
         raise ValueError("You have already submitted for this activity.")
+    
+    files = files or []
 
-    if not content.strip():
-        raise ValueError("Submission content is required.")
+    if not content.strip() and not files:
+        raise ValueError("Submission content or files are required.")
 
     submission = {
         "id": str(uuid4()),
@@ -29,6 +37,7 @@ def submit_submission(activity_id: str, course_id: str, student_id: str, content
         "course_id": course_id,
         "student_id": student_id,
         "content": content,
+        "files": files,
         "created_at": datetime.utcnow().isoformat(),
     }
 
