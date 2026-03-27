@@ -25,6 +25,11 @@ export async function submitPeerSubmission(input: {
   activity_id: string
   student_id: string
   content: string
+  files?: {
+    name: string
+    type: string
+    size: number
+  }[]
 }) {
   const res = await fetch(
     `${API_BASE}/api/v1/courses/peer-coursework/submissions`,
@@ -40,6 +45,34 @@ export async function submitPeerSubmission(input: {
 
   if (!res.ok) {
     throw new Error(data.detail || 'Failed to submit work')
+  }
+
+  return data
+}
+
+export async function uploadPeerSubmissionFile(
+  file: File,
+  activity_id: string,
+  student_id: string
+) {
+  const formData = new FormData()
+  formData.append('file_object', file)
+  formData.append('activity_id', activity_id)
+  formData.append('student_id', student_id)
+
+  const res = await fetch(
+    `${API_BASE}/api/v1/courses/peer-coursework/upload`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    }
+  )
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data?.detail || 'Failed to upload file')
   }
 
   return data

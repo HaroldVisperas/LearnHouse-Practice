@@ -11,6 +11,7 @@ import {
   getPeerSubmissions,
   submitPeerReview,
   submitPeerSubmission,
+  uploadPeerSubmissionFile,
 } from '@services/custom-dev/peer-coursework/peerCourseworkService'
 
 type PeerReviewActivityViewProps = {
@@ -329,16 +330,11 @@ export default function PeerReviewActivityView({
       return
     }
 
-    const composedSubmissionContent = [
-      submissionText.trim()
-        ? `Written Response:\n${submissionText.trim()}`
-        : '',
-      selectedFiles.length > 0
-        ? `Uploaded Files:\n${selectedFiles.map((file) => `- ${file.name}`).join('\n')}`
-        : '',
-    ]
-      .filter(Boolean)
-      .join('\n\n')
+    const uploadedFileMetadata = selectedFiles.map((file) => ({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    }))
 
     setIsSubmitting(true)
 
@@ -347,7 +343,8 @@ export default function PeerReviewActivityView({
         course_id: activity?.course_id?.toString() || 'course-1',
         activity_id: activity?.activity_uuid || 'activity-1',
         student_id: studentId,
-        content: composedSubmissionContent,
+        content: submissionText.trim(),
+        files: uploadedFileMetadata,
       })
 
       toast.success('Submission sent successfully.')
@@ -599,6 +596,22 @@ export default function PeerReviewActivityView({
                       {currentReview.content}
                     </div>
 
+                    {Array.isArray(currentReview.files) && currentReview.files.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                          Submitted Files
+                        </p>
+                        {currentReview.files.map((file: any, index: number) => (
+                          <div
+                            key={index}
+                            className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 border border-gray-200"
+                          >
+                            {file.name} {file.type ? `(${file.type})` : ''}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="mt-4 space-y-4">
                       {rubricCriteria.length > 0 ? (
                         rubricCriteria.map((criterion: any) => (
@@ -712,8 +725,24 @@ export default function PeerReviewActivityView({
                           Your submission
                         </p>
                         <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">
-                          {item?.submission?.content}
+                          {item?.submission?.content || 'No written response submitted.'}
                         </div>
+
+                        {Array.isArray(item?.submission?.files) && item.submission.files.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                              Submitted Files
+                            </p>
+                            {item.submission.files.map((file: any, fileIndex: number) => (
+                              <div
+                                key={fileIndex}
+                                className="rounded-md bg-white px-3 py-2 text-sm text-gray-700 border border-gray-200"
+                              >
+                                {file.name} {file.type ? `(${file.type})` : ''}
+                              </div>
+                            ))}
+                          </div>
+                        )}
 
                         <p className="mt-4 text-sm font-semibold text-gray-500 uppercase tracking-wide">
                           Reviews
