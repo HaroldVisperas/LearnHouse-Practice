@@ -36,6 +36,7 @@ interface LearnHousePlayerProps {
   seekToTime?: number | null
   onSeekHandled?: () => void
   poster?: string
+  onTimeUpdateExternal?: (time: number) => void
 }
 
 function formatTime(seconds: number): string {
@@ -58,6 +59,7 @@ const LearnHousePlayer: React.FC<LearnHousePlayerProps> = ({
   seekToTime,
   onSeekHandled,
   poster,
+  onTimeUpdateExternal,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -194,6 +196,8 @@ const LearnHousePlayer: React.FC<LearnHousePlayerProps> = ({
 
     setCurrentTime(video.currentTime)
 
+    onTimeUpdateExternal?.(video.currentTime)
+
     // Update buffered
     if (video.buffered.length > 0) {
       const bufferedEnd = video.buffered.end(video.buffered.length - 1)
@@ -254,7 +258,7 @@ const LearnHousePlayer: React.FC<LearnHousePlayerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`learnhouse-player relative w-full aspect-video overflow-hidden bg-black ${
+      className={`learnhouse-player relative w-full aspect-video overflow-hidden bg-white dark:bg-neutral-900 ${
         isMobile ? 'rounded-none' : 'rounded-xl shadow-md shadow-gray-300/25 outline outline-1 outline-neutral-200/40'
       }`}
       onMouseMove={!isMobile ? resetHideControlsTimer : undefined}
