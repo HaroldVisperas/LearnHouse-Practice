@@ -47,6 +47,18 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
       { title: 'Topic Overview', time: 30 },
       { title: 'Main Example', time: 75 },
       { title: 'Summary', time: 140 },
+      { title: 'Introduction', time: 0 },
+      { title: 'Topic Overview', time: 30 },
+      { title: 'Main Example', time: 75 },
+      { title: 'Summary', time: 140 },
+      { title: 'Introduction', time: 0 },
+      { title: 'Topic Overview', time: 30 },
+      { title: 'Main Example', time: 75 },
+      { title: 'Summary', time: 140 },
+      { title: 'Introduction', time: 0 },
+      { title: 'Topic Overview', time: 30 },
+      { title: 'Main Example', time: 75 },
+      { title: 'Summary', time: 140 },
     ],
   }
   const [seekToTime, setSeekToTime] = React.useState<number | null>(null)
@@ -58,6 +70,30 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
     }
   }, [activity, org])
 
+  React.useEffect(() => {
+    const el = videoContainerRef.current
+    if (!el) return
+
+    const updateHeight = () => {
+      setVideoHeight(el.offsetHeight)
+    }
+
+    updateHeight()
+
+    const observer = new ResizeObserver(() => {
+      updateHeight()
+    })
+
+    observer.observe(el)
+
+    window.addEventListener('resize', updateHeight)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', updateHeight)
+    }
+  }, [])
+
   const getVideoSrc = () => {
     if (!activity.content?.filename) return ''
     return getActivityVideoStreamUrl(
@@ -67,6 +103,12 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
       activity.content.filename
     )
   }
+
+  const [currentTime, setCurrentTime] = React.useState(0)
+
+  const videoContainerRef = React.useRef<HTMLDivElement>(null)
+
+  const [videoHeight, setVideoHeight] = React.useState<number>(0)
 
   return (
     <div className="w-full max-w-full px-0 sm:px-4">
@@ -79,29 +121,30 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
               <div className="flex flex-col lg:flex-row gap-6 items-start">
 
                 {/* VIDEO SIDE */}
-                <div className="flex-1 w-full">
-                  <div className="relative w-full aspect-video sm:rounded-lg overflow-hidden ring-0 sm:ring-1 sm:ring-gray-200/10 sm:dark:ring-gray-700/20 shadow-none">
-                    {(() => {
-                      const src = getVideoSrc()
+                <div ref={videoContainerRef} className="flex-1 w-full">
+                  {(() => {
+                    const src = getVideoSrc()
 
-                      return src ? (
-                        <LearnHousePlayer
-                          key={activity.activity_uuid}
-                          src={src}
-                          details={details}
-                          seekToTime={seekToTime}
-                          onSeekHandled={() => setSeekToTime(null)}
-                        />
-                      ) : null
-                    })()}
-                  </div>
+                    return src ? (
+                      <LearnHousePlayer
+                        key={activity.activity_uuid}
+                        src={src}
+                        details={details}
+                        seekToTime={seekToTime}
+                        onSeekHandled={() => setSeekToTime(null)}
+                        onTimeUpdateExternal={(time) => setCurrentTime(time)}
+                      />
+                    ) : null
+                  })()}
                 </div>
 
                 {/* CHAPTERS SIDE */}
                 <div className="w-full lg:w-72">
                   <VideoChapters
                     chapters={details.chapters}
+                    currentTime={currentTime}
                     onChapterClick={(time) => setSeekToTime(time)}
+                    containerHeight={videoHeight}
                   />
                 </div>
 
