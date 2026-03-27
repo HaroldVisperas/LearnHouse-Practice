@@ -22,8 +22,19 @@ interface VideoDetails {
 
 interface LearnHousePlayerProps {
   src: string
-  details?: VideoDetails
+  details?: {
+    startTime?: number
+    endTime?: number | null
+    autoplay?: boolean
+    muted?: boolean
+    chapters?: {
+      title: string
+      time: number
+    }[]
+  }
   onReady?: () => void
+  seekToTime?: number | null
+  onSeekHandled?: () => void
   poster?: string
 }
 
@@ -44,6 +55,8 @@ const LearnHousePlayer: React.FC<LearnHousePlayerProps> = ({
   src,
   details,
   onReady,
+  seekToTime,
+  onSeekHandled,
   poster,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -132,6 +145,16 @@ const LearnHousePlayer: React.FC<LearnHousePlayerProps> = ({
       videoRef.current.muted = isMuted
     }
   }, [isMuted])
+
+  useEffect(() => {
+    const video = videoRef.current
+
+    if (!video) return
+    if (seekToTime === null || seekToTime === undefined) return
+
+    video.currentTime = seekToTime
+    onSeekHandled?.()
+  }, [seekToTime, onSeekHandled])
 
   const handlePlayPause = useCallback(() => {
     const video = videoRef.current

@@ -3,12 +3,19 @@ import YouTube from 'react-youtube'
 import { getActivityVideoStreamUrl } from '@services/media/media'
 import { useOrg } from '@components/Contexts/OrgContext'
 import LearnHousePlayer from './LearnHousePlayer'
+import VideoChapters from './VideoChapters'
+
+interface VideoChapter {
+  title: string
+  time: number
+}
 
 interface VideoDetails {
   startTime?: number
   endTime?: number | null
   autoplay?: boolean
   muted?: boolean
+  chapters?: VideoChapter[]
 }
 
 interface VideoActivityProps {
@@ -31,6 +38,18 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
   const org = useOrg() as any
   const resolvedOrgUuid = orgUuid || org?.org_uuid
   const [videoId, setVideoId] = React.useState('')
+  const details = {
+    ...(activity.details || {}),
+
+    // TEMP TEST DATA (remove later)
+    chapters: [
+      { title: 'Introduction', time: 0 },
+      { title: 'Topic Overview', time: 30 },
+      { title: 'Main Example', time: 75 },
+      { title: 'Summary', time: 140 },
+    ],
+  }
+  const [seekToTime, setSeekToTime] = React.useState<number | null>(null)
 
   React.useEffect(() => {
     if (activity?.content?.uri) {
@@ -55,17 +74,37 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
         <>
           {activity.activity_sub_type === 'SUBTYPE_VIDEO_HOSTED' && (
             <div className="my-0 sm:my-3 md:my-5 w-full">
-              <div className="relative w-full aspect-video sm:rounded-lg overflow-hidden ring-0 sm:ring-1 sm:ring-gray-200/10 sm:dark:ring-gray-700/20 shadow-none">
-                {(() => {
-                  const src = getVideoSrc()
-                  return src ? (
-                    <LearnHousePlayer
-                      key={activity.activity_uuid}
-                      src={src}
-                      details={activity.details}
-                    />
-                  ) : null
-                })()}
+              
+              {/* FLEX CONTAINER */}
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
+
+                {/* VIDEO SIDE */}
+                <div className="flex-1 w-full">
+                  <div className="relative w-full aspect-video sm:rounded-lg overflow-hidden ring-0 sm:ring-1 sm:ring-gray-200/10 sm:dark:ring-gray-700/20 shadow-none">
+                    {(() => {
+                      const src = getVideoSrc()
+
+                      return src ? (
+                        <LearnHousePlayer
+                          key={activity.activity_uuid}
+                          src={src}
+                          details={details}
+                          seekToTime={seekToTime}
+                          onSeekHandled={() => setSeekToTime(null)}
+                        />
+                      ) : null
+                    })()}
+                  </div>
+                </div>
+
+                {/* CHAPTERS SIDE */}
+                <div className="w-full lg:w-72">
+                  <VideoChapters
+                    chapters={details.chapters}
+                    onChapterClick={(time) => setSeekToTime(time)}
+                  />
+                </div>
+
               </div>
             </div>
           )}
