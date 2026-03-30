@@ -54,6 +54,8 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
 
   const details: VideoDetails = activity.details || {}
 
+  const youtubePlayerRef = React.useRef<any>(null)
+
   React.useEffect(() => {
     if (activity?.content?.uri) {
       const getYouTubeID = require('get-youtube-id')
@@ -84,6 +86,29 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
     }
   }, [])
 
+  React.useEffect(() => {
+    if (!youtubePlayerRef.current) return
+
+    const interval = setInterval(() => {
+      const player = youtubePlayerRef.current
+
+      if (player && typeof player.getCurrentTime === 'function') {
+        const time = player.getCurrentTime()
+        setCurrentTime(time)
+      }
+    }, 500) // update every 0.5s
+
+    return () => clearInterval(interval)
+  }, [videoId])
+
+  React.useEffect(() => {
+    if (seekToTime === null) return
+    if (!youtubePlayerRef.current) return
+
+    youtubePlayerRef.current.seekTo(seekToTime, true)
+    setSeekToTime(null)
+  }, [seekToTime])
+
   const getVideoSrc = () => {
     if (!activity.content?.filename) return ''
     return getActivityVideoStreamUrl(
@@ -93,6 +118,18 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
       activity.content.filename
     )
   }
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const player = youtubePlayerRef.current
+
+      if (player && typeof player.getCurrentTime === 'function') {
+        setCurrentTime(player.getCurrentTime())
+      }
+    }, 500)
+
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="w-full max-w-full px-0 sm:px-4">
@@ -137,29 +174,45 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
 
           {activity.activity_sub_type === 'SUBTYPE_VIDEO_YOUTUBE' && (
             <div className="my-0 sm:my-3 md:my-5 w-full">
-              <div className="relative w-full aspect-video sm:rounded-lg overflow-hidden ring-0 sm:ring-1 sm:ring-gray-200/10 sm:dark:ring-gray-700/20 shadow-none">
-                <YouTube
-                  className="w-full h-full"
-                  opts={{
-                    width: '100%',
-                    height: '100%',
-                    playerVars: {
-                      autoplay: activity.details?.autoplay ? 1 : 0,
-                      mute: activity.details?.muted ? 1 : 0,
-                      start: activity.details?.startTime || 0,
-                      end: activity.details?.endTime || undefined,
-                      controls: 1,
-                      modestbranding: 1,
-                      rel: 0,
-                    },
-                  }}
-                  videoId={videoId}
-                  onReady={(event) => {
-                    if (activity.details?.startTime) {
-                      event.target.seekTo(activity.details.startTime, true)
-                    }
-                  }}
-                />
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
+                <div ref={videoContainerRef} className="flex-1 w-full">
+                  <div className="relative w-full aspect-video sm:rounded-lg overflow-hidden ring-0 sm:ring-1 sm:ring-gray-200/10 sm:dark:ring-gray-700/20 shadow-none">
+                    <YouTube
+                      className="w-full h-full"
+                      iframeClassName="w-full h-full"
+                      opts={{
+                        width: '100%',
+                        height: '100%',
+                        playerVars: {
+                          autoplay: activity.details?.autoplay ? 1 : 0,
+                          mute: activity.details?.muted ? 1 : 0,
+                          start: activity.details?.startTime || 0,
+                          end: activity.details?.endTime || undefined,
+                          controls: 1,
+                          modestbranding: 1,
+                          rel: 0,
+                        },
+                      }}
+                      videoId={videoId}
+                      onReady={(event) => {
+                        youtubePlayerRef.current = event.target
+
+                        if (activity.details?.startTime) {
+                          event.target.seekTo(activity.details.startTime, true)
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="w-full lg:w-72">
+                  <VideoChapters
+                    chapters={details.chapters}
+                    currentTime={currentTime}
+                    onChapterClick={(time) => setSeekToTime(time)}
+                    containerHeight={videoHeight}
+                  />
+                </div>
               </div>
             </div>
           )}
