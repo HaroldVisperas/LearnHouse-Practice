@@ -52,57 +52,7 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
   const videoContainerRef = React.useRef<HTMLDivElement>(null)
   const [videoHeight, setVideoHeight] = React.useState<number>(0)
 
-  const details: VideoDetails = {
-    ...(activity.details || {}),
-
-    // TEMP TEST DATA (remove later)
-    chapters: [
-      {
-        title: 'Introduction',
-        description: 'Presents what you can learn from this video.',
-        time: 0,
-      },
-      {
-        title: 'ESP32 Development Board',
-        description:
-          'All the things you need to know to get started with the ESP32 development board',
-        items: [
-          {
-            title: 'Overview',
-            description: 'Tackle what is ESP32 development board',
-            time: 120,
-          },
-          {
-            title: 'Functions',
-            description: 'Tackle what the ESP32 development board can do',
-            time: 240,
-          },
-        ],
-      },
-      {
-        title: 'Arduino Board',
-        description:
-          'All the things you need to know to get started with the Arduino development board',
-        items: [
-          {
-            title: 'Overview',
-            description: 'Tackle what is Arduino development board',
-            time: 300,
-          },
-          {
-            title: 'Functions',
-            description: 'Tackle what the Arduino development board can do',
-            time: 350,
-          },
-        ],
-      },
-      {
-        title: 'Conclusion',
-        description: 'Presents a summary of this video’s discussion',
-        time: 400,
-      },
-    ],
-  }
+  const details: VideoDetails = activity.details || {}
 
   React.useEffect(() => {
     if (activity?.content?.uri) {
