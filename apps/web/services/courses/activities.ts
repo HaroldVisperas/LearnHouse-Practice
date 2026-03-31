@@ -13,20 +13,50 @@ export async function createActivity(
 ) {
   delete data.chapterId
 
+  const payload = {
+    ...data,
+    chapter_id: data.chapter_id ?? Number(chapter_id),
+  }
+
   const url = `${getAPIUrl()}activities/?coursechapter_id=${chapter_id}&org_id=${org_id}`
 
   console.log('createActivity URL:', url)
-  console.log('createActivity payload:', data)
+  console.log('createActivity payload:', payload)
   console.log('createActivity token exists:', !!access_token)
 
   const result = await fetch(
     url,
-    RequestBodyWithAuthHeader('POST', data, null, access_token)
+    RequestBodyWithAuthHeader('POST', payload, null, access_token)
   )
 
   const res = await result.json()
+  console.log('createActivity raw response:', res)
   return res
 }
+
+// export async function createActivity(
+//   data: any,
+//   chapter_id: any,
+//   org_id: any,
+//   access_token: string
+// ) {
+//   delete data.chapterId
+
+//   const url = `${getAPIUrl()}activities/?coursechapter_id=${chapter_id}&org_id=${org_id}`
+
+//   console.log('createActivity URL:', url)
+//   console.log('createActivity payload:', data)
+//   console.log('createActivity token exists:', !!access_token)
+
+//   const result = await fetch(
+//     url,
+//     RequestBodyWithAuthHeader('POST', data, null, access_token)
+//   )
+
+//   const res = await result.json()
+//   console.log('createActivity raw response:', res)
+//   return res
+// }
 
 // export async function createActivity(
 //   data: any,

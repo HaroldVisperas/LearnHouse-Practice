@@ -7,11 +7,13 @@ import { getAPIUrl, getUriWithOrg } from '@services/config/config'
 import { swrFetcher } from '@services/utils/ts/requests'
 import { updateActivity } from '@services/courses/activities'
 import { useLHSession } from '@components/Contexts/LHSessionContext'
-import VideoChaptersEditor from '@components/Objects/Activities/Video/VideoChaptersEditor'
+import PracticeQuizEditor, {
+  PracticeQuizQuestion,
+} from '@components/Objects/Activities/PracticeQuiz/PracticeQuizEditor'
 import { ArrowLeft, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-export default function VideoEditPage() {
+export default function PracticeQuizEditPage() {
   const params = useParams()
   const router = useRouter()
 
@@ -40,25 +42,18 @@ export default function VideoEditPage() {
     return null
   }, [course, activityid])
 
-  const [chapters, setChapters] = useState<any[]>([])
-  const [reviewQuizActivityUuid, setReviewQuizActivityUuid] = useState('')
-  const [reviewQuizButtonLabel, setReviewQuizButtonLabel] = useState('Practice Quiz')
+  const [questions, setQuestions] = useState<PracticeQuizQuestion[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [isValid, setIsValid] = useState(false)
 
   React.useEffect(() => {
     if (!activity) return
 
-    if (activity?.details?.chapters) {
-      setChapters(activity.details.chapters)
+    if (activity?.details?.questions && Array.isArray(activity.details.questions)) {
+      setQuestions(activity.details.questions)
     } else {
-      setChapters([])
+      setQuestions([])
     }
-
-    setReviewQuizActivityUuid(activity?.details?.reviewQuizActivityUuid || '')
-    setReviewQuizButtonLabel(
-      activity?.details?.reviewQuizButtonLabel || 'Practice Quiz'
-    )
   }, [activity])
 
   const save = async () => {
@@ -72,9 +67,7 @@ export default function VideoEditPage() {
           ...activity,
           details: {
             ...activity.details,
-            chapters,
-            reviewQuizActivityUuid: reviewQuizActivityUuid.trim(),
-            reviewQuizButtonLabel: reviewQuizButtonLabel.trim() || 'Practice Quiz',
+            questions,
           },
         },
         activity.activity_uuid,
@@ -82,10 +75,10 @@ export default function VideoEditPage() {
       )
 
       await mutate()
-      toast.success('Video settings saved')
+      toast.success('Practice quiz saved')
     } catch (error) {
       console.error(error)
-      toast.error('Failed to save video settings')
+      toast.error('Failed to save practice quiz')
     } finally {
       setIsSaving(false)
     }
@@ -106,7 +99,10 @@ export default function VideoEditPage() {
           type="button"
           onClick={() =>
             router.push(
-              getUriWithOrg(orgslug, `/course/${courseuuid}/activity/${activityid}`)
+              getUriWithOrg(
+                orgslug,
+                `/course/${courseuuid}/activity/${activityid}`
+              )
             )
           }
           className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
@@ -133,11 +129,11 @@ export default function VideoEditPage() {
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-neutral-900">
-            Edit Video Chapters
+            Edit Practice Quiz
           </h1>
           <p className="mt-2 text-sm text-neutral-600">
-            Manage chapter sections, subchapters, descriptions, timestamps, and
-            the optional review quiz button for this video activity.
+            Create lightweight review questions with instant feedback. This quiz
+            is not graded and does not affect course score.
           </p>
         </div>
 
@@ -149,52 +145,14 @@ export default function VideoEditPage() {
             {activity.name}
           </div>
           <div className="mt-1 text-sm text-neutral-600">
-            Video content is read-only here. Only chapter metadata and the
-            optional review quiz link can be edited.
+            Students will answer one question at a time and receive immediate
+            feedback.
           </div>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-5 mb-6">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4">
-            Practice Quiz Button
-          </h2>
-
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-neutral-700">
-                Review Quiz Activity UUID
-              </label>
-              <input
-                type="text"
-                value={reviewQuizActivityUuid}
-                onChange={(e) => setReviewQuizActivityUuid(e.target.value)}
-                placeholder="activity_xxxxx"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-              />
-              <p className="mt-1 text-xs text-neutral-500">
-                Enter the target quiz activity UUID. Leave blank if you do not
-                want to show a Practice Quiz button.
-              </p>
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-neutral-700">
-                Button Label
-              </label>
-              <input
-                type="text"
-                value={reviewQuizButtonLabel}
-                onChange={(e) => setReviewQuizButtonLabel(e.target.value)}
-                placeholder="Practice Quiz"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        <VideoChaptersEditor
-          value={chapters}
-          onChange={setChapters}
+        <PracticeQuizEditor
+          value={questions}
+          onChange={setQuestions}
           onValidityChange={setIsValid}
         />
       </div>

@@ -1,6 +1,8 @@
 import React from 'react'
+import Link from 'next/link'
 import YouTube from 'react-youtube'
 import { getActivityVideoStreamUrl } from '@services/media/media'
+import { getUriWithOrg } from '@services/config/config'
 import { useOrg } from '@components/Contexts/OrgContext'
 import LearnHousePlayer from './LearnHousePlayer'
 import VideoChapters from './VideoChapters'
@@ -24,6 +26,8 @@ interface VideoDetails {
   autoplay?: boolean
   muted?: boolean
   chapters?: VideoChapterGroup[]
+  reviewQuizActivityUuid?: string
+  reviewQuizButtonLabel?: string
 }
 
 interface VideoActivityProps {
@@ -51,10 +55,13 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
   const [currentTime, setCurrentTime] = React.useState(0)
   const videoContainerRef = React.useRef<HTMLDivElement>(null)
   const [videoHeight, setVideoHeight] = React.useState<number>(0)
+  const youtubePlayerRef = React.useRef<any>(null)
 
   const details: VideoDetails = activity.details || {}
 
-  const youtubePlayerRef = React.useRef<any>(null)
+  const cleanCourseUuid = course?.course_uuid?.replace('course_', '')
+  const cleanQuizActivityUuid =
+    details.reviewQuizActivityUuid?.replace('activity_', '')
 
   React.useEffect(() => {
     if (activity?.content?.uri) {
@@ -87,8 +94,6 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
   }, [])
 
   React.useEffect(() => {
-    if (!youtubePlayerRef.current) return
-
     const interval = setInterval(() => {
       const player = youtubePlayerRef.current
 
@@ -96,10 +101,10 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
         const time = player.getCurrentTime()
         setCurrentTime(time)
       }
-    }, 500) // update every 0.5s
+    }, 500)
 
     return () => clearInterval(interval)
-  }, [videoId])
+  }, [])
 
   React.useEffect(() => {
     if (seekToTime === null) return
@@ -119,17 +124,23 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
     )
   }
 
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      const player = youtubePlayerRef.current
+  const renderPracticeQuizButton = () => {
+    if (!cleanQuizActivityUuid) return null
 
-      if (player && typeof player.getCurrentTime === 'function') {
-        setCurrentTime(player.getCurrentTime())
-      }
-    }, 500)
-
-    return () => clearInterval(interval)
-  }, [])
+    return (
+      <div className="mt-6 flex justify-center lg:justify-start">
+        <Link
+          href={getUriWithOrg(
+            org?.slug || '',
+            `/course/${cleanCourseUuid}/activity/${cleanQuizActivityUuid}`
+          )}
+          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition"
+        >
+          {details.reviewQuizButtonLabel || 'Practice Quiz'}
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-full px-0 sm:px-4">
@@ -169,6 +180,8 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
                   />
                 </div>
               </div>
+
+              {renderPracticeQuizButton()}
             </div>
           )}
 
@@ -214,6 +227,8 @@ function VideoActivity({ activity, course, orgUuid }: VideoActivityProps) {
                   />
                 </div>
               </div>
+
+              {renderPracticeQuizButton()}
             </div>
           )}
         </>

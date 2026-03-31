@@ -48,6 +48,7 @@ const AISidePanelContentWrapper = lazy(() => import('@components/Objects/Activit
 const AISidePanelInline = lazy(() => import('@components/Objects/Activities/AI/AIActivityAsk').then(mod => ({ default: mod.AISidePanelInline })))
 const AIChatBotProvider = lazy(() => import('@components/Contexts/AI/AIChatBotContext'))
 const ScormActivity = lazy(() => import('../../../../../../../../ee/components/Activities/ScormActivity'))
+const PracticeQuizActivity = lazy(() => import('@components/Objects/Activities/PracticeQuiz/PracticeQuizActivity'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -281,6 +282,14 @@ function ActivityClient(props: ActivityClientProps) {
           onUnmarkComplete={unmarkPeerReviewActivityComplete}
           trailData={trailData}
         />
+      )
+    }
+
+    if (activity.activity_sub_type === 'SUBTYPE_CUSTOM_PRACTICE_QUIZ') {
+      return (
+        <Suspense fallback={<LoadingFallback />}>
+          <PracticeQuizActivity activity={activity} />
+        </Suspense>
       )
     }
 

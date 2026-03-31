@@ -161,6 +161,8 @@ function ActivityElement(props: ActivitiyElementProps) {
             activityType={
               props.activity.activity_sub_type === 'SUBTYPE_CUSTOM_PEER_REVIEW'
                 ? 'SUBTYPE_CUSTOM_PEER_REVIEW'
+                : props.activity.activity_sub_type === 'SUBTYPE_CUSTOM_PRACTICE_QUIZ'
+                ? 'SUBTYPE_CUSTOM_PRACTICE_QUIZ'
                 : props.activity.activity_type
             }
             isMobile={isMobile}
@@ -294,7 +296,11 @@ const ACTIVITIES = {
   'SUBTYPE_CUSTOM_PEER_REVIEW': {
     displayNameKey: 'peerreview',
     Icon: FileText,
-},
+  },
+  'SUBTYPE_CUSTOM_PRACTICE_QUIZ': {
+    displayNameKey: 'practicequiz',
+    Icon: FileText,
+  },
 }
 
 const ActivityTypeIndicator = ({activityType, isMobile} : { activityType: keyof typeof ACTIVITIES, isMobile: boolean}) => {
@@ -407,6 +413,24 @@ const ActivityElementOptions = ({ activity, isMobile }: { activity: any; isMobil
         >
           <FilePenLine size={12} />
           <span className="hidden sm:inline">Edit Peer Review</span>
+        </Link>
+      )}
+      {activity.activity_sub_type === 'SUBTYPE_CUSTOM_PRACTICE_QUIZ' && (
+        <Link
+          href={
+            getUriWithOrg(org.slug, '') +
+            `/course/${course?.courseStructure.course_uuid.replace(
+              'course_',
+              ''
+            )}/activity/${activity.activity_uuid.replace(
+              'activity_',
+              ''
+            )}/practice-quiz/edit`
+          }
+          className="h-7 px-2 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-md flex items-center gap-1 text-xs font-bold transition-colors border border-orange-200 shadow-sm shadow-orange-300/20"
+        >
+          <FilePenLine size={12} />
+          <span className="hidden sm:inline">Edit Practice Quiz</span>
         </Link>
       )}
     </>

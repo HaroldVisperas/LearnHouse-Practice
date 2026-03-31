@@ -12,6 +12,7 @@ import DocumentPdfModal from './NewActivityModal/DocumentActivityModal'
 import Assignment from './NewActivityModal/AssignmentActivityModal'
 import { useTranslation } from 'react-i18next'
 import PeerReviewActivityModal from './NewActivityModal/PeerReviewActivityModal'
+import { truncate } from 'fs'
 
 function NewActivityModal({
   closeModal,
@@ -24,6 +25,19 @@ function NewActivityModal({
   const { t } = useTranslation()
   const [selectedView, setSelectedView] = useState('home')
 
+  const createPracticeQuizActivity = async () => {
+    await submitActivity({
+      name: 'New Practice Quiz',
+      activity_type: 'TYPE_DYNAMIC',
+      activity_sub_type: 'SUBTYPE_CUSTOM_PRACTICE_QUIZ',
+      content: {},
+      details: {
+        questions: [],
+      },
+      published: true,
+    })
+  }
+
   return (
     <>
       {selectedView === 'home' && (
@@ -34,58 +48,99 @@ function NewActivityModal({
             }}
           >
             <div className="h-20 rounded-lg m-0.5 flex flex-col items-center justify-end text-center bg-white hover:cursor-pointer">
-              <Image unoptimized quality={100} alt="Dynamic Page" src={DynamicPageActivityImage}></Image>
+              <Image
+                unoptimized
+                quality={100}
+                alt="Dynamic Page"
+                src={DynamicPageActivityImage}
+              />
             </div>
             <div className="flex text-sm h-5 font-medium text-gray-500 items-center justify-center text-center">
               {t('dashboard.courses.structure.activity.types.dynamic_page')}
             </div>
           </ActivityOption>
+
           <ActivityOption
             onClick={() => {
               setSelectedView('video')
             }}
           >
             <div className="h-20 rounded-lg m-0.5 flex flex-col items-center justify-end text-center bg-white hover:cursor-pointer">
-              <Image unoptimized quality={100} alt="Video Page" src={VideoPageActivityImage}></Image>
+              <Image
+                unoptimized
+                quality={100}
+                alt="Video Page"
+                src={VideoPageActivityImage}
+              />
             </div>
             <div className="flex text-sm h-5 font-medium text-gray-500 items-center justify-center text-center">
               {t('dashboard.courses.structure.activity.types.video')}
             </div>
           </ActivityOption>
+
           <ActivityOption
             onClick={() => {
               setSelectedView('documentpdf')
             }}
           >
             <div className="h-20 rounded-lg m-0.5 flex flex-col items-center justify-end text-center bg-white hover:cursor-pointer">
-              <Image unoptimized quality={100} alt="Document PDF Page" src={DocumentPdfPageActivityImage}></Image>
+              <Image
+                unoptimized
+                quality={100}
+                alt="Document PDF Page"
+                src={DocumentPdfPageActivityImage}
+              />
             </div>
             <div className="flex text-sm h-5 font-medium text-gray-500 items-center justify-center text-center">
               {t('dashboard.courses.structure.activity.types.document')}
             </div>
           </ActivityOption>
+
           <ActivityOption
             onClick={() => {
               setSelectedView('assignments')
             }}
           >
             <div className="h-20 rounded-lg m-0.5 flex flex-col items-center justify-end text-center bg-white hover:cursor-pointer">
-              <Image unoptimized quality={100} alt="Assignment Page" src={AssignmentActivityImage}></Image>
+              <Image
+                unoptimized
+                quality={100}
+                alt="Assignment Page"
+                src={AssignmentActivityImage}
+              />
             </div>
             <div className="flex text-sm h-5 font-medium text-gray-500 items-center justify-center text-center">
               {t('dashboard.courses.structure.activity.types.assignments')}
             </div>
           </ActivityOption>
+
           <ActivityOption
             onClick={() => {
               setSelectedView('peerreview')
             }}
           >
             <div className="h-20 rounded-lg m-0.5 flex flex-col items-center justify-end text-center bg-white hover:cursor-pointer">
-              <Image height={70} unoptimized quality={100} alt="Peer Review Page" src={PeerReviewActivityImage}></Image>
+              <Image
+                height={70}
+                unoptimized
+                quality={100}
+                alt="Peer Review Page"
+                src={PeerReviewActivityImage}
+              />
             </div>
             <div className="flex text-sm h-5 font-medium text-gray-500 items-center justify-center text-center">
               {t('dashboard.courses.structure.activity.types.peerreview')}
+            </div>
+          </ActivityOption>
+
+          <ActivityOption
+            onClick={createPracticeQuizActivity}
+          >
+            <div className="h-20 rounded-lg m-0.5 flex flex-col items-center justify-center text-center bg-white hover:cursor-pointer">
+              <div className="text-3xl font-bold text-orange-500">Q</div>
+            </div>
+            <div className="flex text-sm h-5 font-medium text-gray-500 items-center justify-center text-center">
+              Practice Quiz
             </div>
           </ActivityOption>
         </div>
